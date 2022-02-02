@@ -1,6 +1,6 @@
-# Untitled notebook
+# Hand Tracking by DeepLab
 
-## Section
+## 1.Helper module
 
 ```elixir
 defmodule Model do
@@ -31,6 +31,8 @@ end
 ```elixir
 Model.get()
 ```
+
+## 2.Inference Module
 
 ```elixir
 defmodule HandTrac do
@@ -83,6 +85,8 @@ defmodule HandTrac do
       [y1, x1, y2, x2] = Nx.to_flat_list(box)
       CImg.draw_rect(canvas, x1, y1, x2, y2, {255, 0, 0})
     end)
+    |> Builder.runit()
+    |> CImg.resize({640, 480})
     |> CImg.to_binary(:jpeg)
   end
 end
@@ -95,6 +99,8 @@ HandTrac.start_link(model: Model.file())
 ```elixir
 TflInterp.info(HandTrac)
 ```
+
+## 3.Demo
 
 ```elixir
 Kino.animate(10, 0, fn i ->
