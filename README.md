@@ -1,2 +1,2 @@
-# tfl_notebook
-Notebook of tfl_interp examples.
+# tinyML_livebook
+Notebook of tinyML - tfl_interp - examples.
