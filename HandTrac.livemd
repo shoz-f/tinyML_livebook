@@ -109,9 +109,9 @@ img = Picam.next_frame()
   res =
     HandTrac.apply(img)
     |> HandTrac.draw_result(img)
-|> Kino.Image.new(:jpeg)
+    |> Kino.Image.new(:jpeg)
 
   {:cont, res, i + 1}
-  :halt
+  #:halt
 end)
 ```
