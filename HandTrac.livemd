@@ -34,18 +34,19 @@ Model.get()
 
 ```elixir
 defmodule HandTrac do
-  # , model: Model.file()
+  # TflInterp, model: Model.file()
   use TflInterp
 
   @handtrack_shape {300, 300}
   @threshold 0.9
 
-  def apply(img) do
+  alias CImg.Builder
+
+  def apply(jpeg) do
     # preprocess
     bin =
-      img
+      CImg.from_binary(jpeg)
       |> CImg.resize(@handtrack_shape)
-      #      |> CImg.transpose()
       |> CImg.to_binary(range: {-1.0, 1.0})
 
     # prediction
@@ -68,7 +69,21 @@ defmodule HandTrac do
               index
             end)).()
 
-    bboxes |> Nx.take(Nx.tensor(index))
+    unless index == [] do
+      bboxes
+      |> Nx.take(Nx.tensor(index))
+      |> Nx.to_batched_list(1)
+    else
+      []
+    end
+  end
+
+  def draw_result(results, jpeg) do
+    Enum.reduce(results, Builder.from_binary(jpeg), fn box, canvas ->
+      [y1, x1, y2, x2] = Nx.to_flat_list(box)
+      CImg.draw_rect(canvas, x1, y1, x2, y2, {255, 0, 0})
+    end)
+    |> CImg.to_binary(:jpeg)
   end
 end
 ```
@@ -82,28 +97,15 @@ TflInterp.info(HandTrac)
 ```
 
 ```elixir
+Kino.animate(10, 0, fn i ->
 img = Picam.next_frame()
 
-Kino.render(Kino.Image.new(img, :jpeg))
-
-cimg = CImg.from_binary(img)
-
-cimg
-|> HandTrac.apply()
-|> Nx.to_batched_list(1)
-|> Enum.reduce(CImg.builder(cimg), fn box, canvas ->
-  [y1, x1, y2, x2] = Nx.to_flat_list(box)
-  CImg.draw_rect(canvas, x1, y1, x2, y2, {255, 0, 0})
-end)
-|> CImg.to_binary(:jpeg)
+  res =
+    HandTrac.apply(img)
+    |> HandTrac.draw_result(img)
 |> Kino.Image.new(:jpeg)
-```
 
-```elixir
-a = Kino.Image.new(img, :jpeg)
-Map.to_list(a)
-```
-
-```elixir
-%{__struct__: Kino.Image, content: img, mime_type: "image/jpeg"}
+  {:cont, res, i + 1}
+  :halt
+end)
 ```
