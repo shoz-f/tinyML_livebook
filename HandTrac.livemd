@@ -1,0 +1,109 @@
+# Untitled notebook
+
+## Section
+
+```elixir
+defmodule Model do
+  @model_file "hand_trac.tflite"
+
+  @wearhouse "https://github.com/shoz-f/tinyML_livebook/releases/download/model/#{@model_file}"
+  @local "/data/#{@model_file}"
+
+  def file() do
+    @local
+  end
+
+  def get() do
+    Req.get!(@wearhouse).body
+    |> then(fn x -> File.write(@local, x) end)
+  end
+
+  def rm() do
+    File.rm(@local)
+  end
+
+  def exists?() do
+    File.exists?(@local)
+  end
+end
+```
+
+```elixir
+Model.get()
+```
+
+```elixir
+defmodule HandTrac do
+  # , model: Model.file()
+  use TflInterp
+
+  @handtrack_shape {300, 300}
+  @threshold 0.9
+
+  def apply(img) do
+    # preprocess
+    bin =
+      img
+      |> CImg.resize(@handtrack_shape)
+      #      |> CImg.transpose()
+      |> CImg.to_binary(range: {-1.0, 1.0})
+
+    # prediction
+    __MODULE__
+    |> TflInterp.set_input_tensor(0, bin)
+    |> TflInterp.invoke()
+
+    [bboxes, scores] =
+      for i <- [0, 2] do
+        TflInterp.get_output_tensor(__MODULE__, i)
+        |> Nx.from_binary({:f, 32})
+        |> Nx.reshape({10, :auto})
+      end
+
+    # postprocess
+    index =
+      Nx.to_flat_list(scores)
+      |> Enum.with_index()
+      |> (&(for {score, index} <- &1, score >= @threshold do
+              index
+            end)).()
+
+    bboxes |> Nx.take(Nx.tensor(index))
+  end
+end
+```
+
+```elixir
+HandTrac.start_link(model: Model.file())
+```
+
+```elixir
+TflInterp.info(HandTrac)
+```
+
+```elixir
+img = Picam.next_frame()
+
+Kino.render(Kino.Image.new(img, :jpeg))
+
+cimg = CImg.from_binary(img)
+
+cimg
+|> HandTrac.apply()
+|> Nx.to_batched_list(1)
+|> Enum.reduce(CImg.builder(cimg), fn box, canvas ->
+  [y1, x1, y2, x2] = Nx.to_flat_list(box)
+  CImg.draw_rect(canvas, x1, y1, x2, y2, {255, 0, 0})
+end)
+|> CImg.to_binary(:jpeg)
+|> Kino.Image.new(:jpeg)
+```
+
+```elixir
+a = Kino.Image.new(img, :jpeg)
+Map.to_list(a)
+```
+
+```elixir
+%{__struct__: Kino.Image, content: img, mime_type: "image/jpeg"}
+```
