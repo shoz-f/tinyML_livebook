@@ -1,6 +1,32 @@
-# Hand Tracking by DeepLab
+# Hand Tracking by SSD MobileNet
+
+## 0.Original work
+
+Victor Dibia's "Real-time Hand-Detection using Neural Networks (SSD) on Tensorflow"
+
+ https://github.com/victordibia/handtracking
+
+From his github:
+> Both examples above were run on a macbook pro CPU (i7, 2.5GHz, 16GB). Some fps numbers are:
+>
+> | FPS | Image Size | Device                         | Comments                                                                |
+> |----|----------|----------------------------|-----------------------------------------------------|
+> |  21 | 320 * 240  | Macbook pro (i7, 2.5GHz, 16GB) | Run without visualizing results                     |
+> |  16 | 320 * 240  | Macbook pro (i7, 2.5GHz, 16GB) | Run while visualizing results (image above)         |
+> |  11 | 640 * 480  | Macbook pro (i7, 2.5GHz, 16GB) | Run while visualizing results (image above)         |
+
+---
+Shubham Panchal's "Hand Detection using TFLite in Android"
+
+https://github.com/shubham0204/Hand_Detection_TFLite_Android
+
+
+***Thanks Victor and Shubham!!!***
+
+# Implementation for Elixir/Nerves using TflInterp
 
 ## 1.Helper module
+Create the module to assist with tasks such as downloading a model.
 
 ```elixir
 defmodule Model do
@@ -28,11 +54,19 @@ defmodule Model do
 end
 ```
 
+Get the tflite model from `@wearhouse` and store it in `@local`.
+
 ```elixir
 Model.get()
 ```
 
-## 2.Inference Module
+## 2.Defining the inference module: HandTrac
+
+- Pre-processing:<br>
+Resize the input image to the size of `@handtrack_shape` and create a Float32 binary sequence normalized to the range {-1.0, 1.0}.
+
+- Post-processing:<br>
+Extract the BBOXes with scores that exceed the threshold `@threshold` from the inference results.
 
 ```elixir
 defmodule HandTrac do
@@ -67,9 +101,7 @@ defmodule HandTrac do
     index =
       Nx.to_flat_list(scores)
       |> Enum.with_index()
-      |> (&(for {score, index} <- &1, score >= @threshold do
-              index
-            end)).()
+      |> (&(for {score, index} <- &1, score >= @threshold do index end)).()
 
     unless index == [] do
       bboxes
@@ -92,26 +124,53 @@ defmodule HandTrac do
 end
 ```
 
+Launch `HandTrac`.
+
 ```elixir
 HandTrac.start_link(model: Model.file())
 ```
+
+Displays the properties of the `HandTrac` model.
 
 ```elixir
 TflInterp.info(HandTrac)
 ```
 
-## 3.Demo
+## 3.Let's try it
 
+In one shot.
+```elixir
+img = Picam.next_frame()
+
+HandTrac.apply(img)
+|> HandTrac.draw_result(img)
+|> Kino.Image.new(:jpeg)
+```
+
+In continuous shooting.
 ```elixir
 Kino.animate(10, 0, fn i ->
-img = Picam.next_frame()
+  img = Picam.next_frame()
 
   res =
     HandTrac.apply(img)
     |> HandTrac.draw_result(img)
-|> Kino.Image.new(:jpeg)
+    |> Kino.Image.new(:jpeg)
 
   {:cont, res, i + 1}
-  :halt
+  #:halt
 end)
 ```
+
+## 4.TIL ;-)
+
+#### Date: Feb. 3, 2022 / Nerves-livebook rpi3
+
+It is still not at a practical level.
+So far, there seems to be no problem in the post-processing, which is computationally inexpensive.
+However, the pre-processing and inference sections, which process large amounts of data, take a lot of processing time.
+
+Problems to be solved:<br>
+- Both the inference time(about 3 FPS) and the input data transfer time are too time-consuming.
+
+&#9633;
