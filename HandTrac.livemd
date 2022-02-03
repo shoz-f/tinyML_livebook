@@ -1,4 +1,3 @@
-<!-- set syntax=markdown: >
 # Hand Tracking by SSD MobileNet
 
 ## 0.Original work
