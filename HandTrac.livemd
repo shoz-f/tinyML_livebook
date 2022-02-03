@@ -23,7 +23,9 @@ https://github.com/shubham0204/Hand_Detection_TFLite_Android
 
 ***Thanks Victor and Shubham!!!***
 
-# Implementation for Elixir/Nerves using TflInterp
+---
+
+## Implementation for Elixir/Nerves using TflInterp
 
 ## 1.Helper module
 Create the module to assist with tasks such as downloading a model.
