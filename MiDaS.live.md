@@ -1,12 +1,27 @@
-# Untitled notebook
+# Monocular Depth Estimation by MiDaS v2.1
 
-## Section
+## 0.Original work
+
+Intelligent Systems Lab Org:<br>
+"Towards Robust Monocular Depth Estimation: Mixing Datasets for Zero-shot Cross-dataset Transfer"
+
+- https://arxiv.org/abs/1907.01341v3
+- https://github.com/isl-org/MiDaS
+
+***Thanks a lot!!!***
+
+---
+
+## Implementation for Elixir/Nerves using TflInterp
+
+## 1.Helper module
+Create the module to assist with tasks such as downloading a model.
 
 ```elixir
 defmodule Model do
   @model_file "midas_opt.tflite"
 
-  @wearhouse "https://github.com/shoz-f/tinyML_livebook/releases/download/model/#{@model_file}"
+  @wearhouse "https://github.com/isl-org/MiDaS/releases/download/v2_1/model_opt.tflite"
   @local "/data/#{@model_file}"
 
   def file() do
@@ -28,13 +43,16 @@ defmodule Model do
 end
 ```
 
+Get the tflite model from `@wearhouse` and store it in `@local`.
+
 ```elixir
 Model.get()
 ```
 
+## 2.Defining the inference module: Midas
 ```elixir
 defmodule Midas do
-  # , model: Model.file()
+  #use TflInterp, model: Model.file()
   use TflInterp
 
   @midas_shape {256, 256}
@@ -71,17 +89,20 @@ defmodule Midas do
 end
 ```
 
+Launch `Midas`.
+
 ```elixir
 Midas.start_link(model: Model.file())
 ```
+
+Displays the properties of the `Midas` model.
 
 ```elixir
 TflInterp.info(Midas)
 ```
 
-```elixir
-Picam.Camera.start_link()
-```
+## 3.Let's try it
+
 
 ```elixir
 img = Picam.next_frame()
@@ -95,3 +116,16 @@ CImg.from_binary(img)
 |> CImg.to_binary(:png)
 |> Kino.Image.new(:png)
 ```
+## 4.TIL ;-)
+
+#### Date: Feb. 5, 2022 / Nerves-livebook rpi3
+
+It takes a long time to quantize the depth image in  post-processing, 
+
+The heatmap scale (256) is narrow, so you may not see the depth details.
+
+&#9633;
+
+#### License
+Copyright 2022 Shozo Fukuda.
+Apache License Version 2.0
