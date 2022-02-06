@@ -1,4 +1,4 @@
-# Object detection by Yolo-X
+# Object detection by YOLOX
 
 ## 0.Original work
 
@@ -8,7 +8,7 @@ Ge, Zheng and Liu, Songtao and Wang, Feng and Li, Zeming and Sun, Jian<br>
 * https://arxiv.org/abs/2107.08430
 * https://github.com/Megvii-BaseDetection/YOLOX
 
-#### > A technical article on YOLOx in Japanese
+#### > A technical article on YOLOX in Japanese
 
 @koshian2 "実装から見るYOLOX：2021年のYOLOシリーズを超えて"
 * https://qiita.com/koshian2/items/af032cb102f48e789e66
