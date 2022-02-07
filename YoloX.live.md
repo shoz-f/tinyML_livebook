@@ -186,7 +186,7 @@ jpeg = Picam.next_frame()
 
 with {:ok, res} <- YoloX.apply(jpeg) do
   # draw result box
-  Enum.reduce(res, Builder.from_binary(jpeg), &draw_object.(&2, &1))
+  Enum.reduce(Map.to_list(res), Builder.from_binary(jpeg), &draw_object.(&2, &1))
   |> Builder.runit()
 else
   _ -> CImg.from_binary(jpeg)
