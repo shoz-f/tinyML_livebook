@@ -175,10 +175,11 @@ In one shot.
 ```elixir
 alias CImg.Builder
 
-draw_object = fn builder, {_name, boxes} ->
+draw_object = fn builder, {name, boxes} ->
   Enum.reduce(boxes, builder, fn [_score | box], canvas ->
     [x0, y0, x1, y1] = Enum.map(box, &round(&1))
     CImg.draw_rect(canvas, x0, y0, x1, y1, {255, 0, 0})
+    |> CImg.draw_text(x0, y0 - 16, name, 16, :red)
   end)
 end
 
