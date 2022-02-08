@@ -69,9 +69,19 @@ https://github.com/onnx/models
 * PINTO_model_zoo<br>
 https://github.com/PINTO0309/PINTO_model_zoo
 
-## 4.Tools of Elixir
+## 4.Model conversion
+* tflite2onnx<br>
+https://github.com/jackwish/tflite2onnx
 
-## 5.Groups
+* onnx-tensorflow<br>
+https://github.com/onnx/onnx-tensorflow
+
+* PyTorch-ONNX-TFLite
+https://github.com/sithu31296/PyTorch-ONNX-TFLite
+
+## 5.Tools of Elixir
+
+## 6.Groups
 * tinyML Foundation<br>
 https://www.tinyml.org/
 

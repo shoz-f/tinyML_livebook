@@ -50,6 +50,13 @@ Model.get()
 ```
 
 ## 2.Defining the inference module: Midas
+
+* Pre-processing:<br>
+Resize the input image to the size of `@midas_shape` and create a Float32 binary sequence normalized to the range {-2.0, 2.0}.
+
+* Post-processing:<br>
+Cut the f32 depth image at its min-max value and map it to a 0-255 gray image.
+
 ```elixir
 defmodule Midas do
   #use TflInterp, model: Model.file()

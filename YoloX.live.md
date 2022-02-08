@@ -72,7 +72,7 @@ Helper.get()
 
 ## 2.Defining the inference module: YoloX
 
-* Model
+* Model<br>
 Standard Model: YOLOX-s 640 converted from Pytorch model.
 
 * Pre-processing:<br>
