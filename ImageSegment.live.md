@@ -59,7 +59,7 @@ Helper.get()
 
 ```elixir
 defmodule DeepLab3 do
-  # use TflInterp, model: Model.file()
+  # use TflInterp, model: "path of tflite file"
   use TflInterp
 
   @deeplab3_shape {257, 257}
@@ -107,14 +107,12 @@ TflInterp.info(DeepLab3)
 ## 3.Let's try it
 
 ```elixir
-img = Picam.next_frame()
-
-Kino.render(Kino.Image.new(img, :jpeg))
-
-DeepLab3.apply(img)
+Picam.next_frame()
+|> tap(&Kino.render(Kino.Image.new(&1, :jpeg)))  # render the original image
+|> DeepLab3.apply()
 |> CImg.resize({320, 240})
-|> CImg.to_binary(:png)
-|> Kino.Image.new(:png)
+|> CImg.to_binary(:jpeg)
+|> Kino.Image.new(:jpeg)
 ```
 
 ## 4.TIL ;-)
