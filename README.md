@@ -3,7 +3,7 @@ Notebook of tinyML - tfl_interp - examples.
 
 ## Setting up
 
-* Setting up TflInterp on Nerves/rpi3-livebook(./setup_TflInterp_on_Nerves-livebook.md)
+* [Setting up TflInterp on Nerves/rpi3-livebook](./setup_TflInterp_on_Nerves-livebook.md)
 
 ## How to use notebook
 
