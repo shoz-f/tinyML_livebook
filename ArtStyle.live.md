@@ -1,9 +1,12 @@
 # Artistic Style
 
 ## 0.Original work
+
 "Fast Style Transfer for Arbitrary Styles"
+
 * https://github.com/magenta/magenta/tree/main/magenta/models/arbitrary_image_stylization
 * https://www.tensorflow.org/lite/examples/style_transfer/overview
+
 From their performance bench mark:
 
 model name | size | device | NNAPI | CPU 
@@ -15,9 +18,10 @@ Style transform model(int8)| 0.2 Mb | Pixel 3 (Android 10)||540ms*
 || Pixel 4 (Android 10)  || 405ms*
 ||iPhone XS (iOS 12.4.1) || 251ms**
 
-<br>
+<br />
 
 Leon A. Gatys, Alexander S. Ecker, Matthias Bethge "A Neural Algorithm of Artistic Style"
+
 * https://arxiv.org/abs/1508.06576
 
 ***Thanks a lot!!!***
@@ -48,7 +52,8 @@ defmodule Helper do
     [
       {@url_predict, @local_predict},
       {@url_transform, @local_transform}
-    ] |> Enum.each(&get/1)
+    ]
+    |> Enum.each(&get/1)
   end
   
   defp get({url, local}) do
@@ -121,6 +126,7 @@ TflInterp.info(StylePredict)
 ```
 
 ## 3.Defining the DNN modules: StyleTransform
+
 * Pre-processing:<br>
   Resize the input image to the size of `@transform_shape` and create a Float32 binary sequence normalized to the range {0.0, 1.0}.
 
@@ -171,7 +177,7 @@ TflInterp.info(StyleTransform)
 
 ```elixir
 style =
-  Req.get!("https://github.com/shoz-f/tinyML_livebook/releases/download/model/rose.JPG").body
+  Req.get!("https://github.com/shoz-f/tinyML_livebook/releases/download/model/helleborus.jpg").body
   |> tap(&Kino.render(Kino.Image.new(&1, :png)))
   |> StylePredict.get_style()
 
@@ -186,7 +192,8 @@ Picam.next_frame()
 ## 5.TIL ;-)
 
 #### Date: Feb. 10, 2022 / Nerves-livebook rpi3
-Total processing time is about 4.5 seconds, including downloading the style image and camera shooting.
+
+Total processing time is about 4.4 seconds, including downloading the style image and camera shooting.
 Of that time, the StylePredict inference - TflInterp.invoke(StylePredict) - takes about 78 micro seconds,
 and the StyleTransform inference - TflInterp.invoke(StyleTransform) - takes about 1.9 seconds.
 That's about a quarter of the performance of the Pixel 3, which has a 2.5GHz + 1.6GHz, 64-bit octa-core CPU.
