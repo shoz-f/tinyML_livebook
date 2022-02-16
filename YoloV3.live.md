@@ -1,0 +1,157 @@
+# Object detection by YOLOv3
+
+## 0.Original work
+
+"YOLO: Real-Time Object Detection"<br>
+* https://pjreddie.com/darknet/yolo/
+
+Việt Hùng "tensorflow-yolov4-tflite"<br>
+* https://github.com/hunglc007/tensorflow-yolov4-tflite
+
+***Thanks a lot!!!***
+
+---
+
+## Implementation for Elixir/Nerves using TflInterp
+
+## 1.Helper module
+
+The module to assist with tasks such as downloading a model.
+
+```elixir
+defmodule Helper do
+  @model_file "yolo3-416.tflite"
+  @label_file "coco.label"
+
+  @wearhouse "https://github.com/shoz-f/tinyML_livebook/releases/download/model/"
+  @local "/data/"
+
+  def model() do
+    @local <> @model_file
+  end
+
+  def label() do
+    @local <> @label_file
+  end
+
+  def get() do
+    Req.get!(@wearhouse <> @model_file).body
+    |> then(fn x -> File.write(model(), x) end)
+
+    Req.get!(@wearhouse <> @label_file).body
+    |> then(fn x -> File.write(label(), x) end)
+  end
+
+  def rm(:model), do: File.rm(model())
+  def rm(:label), do: File.rm(label())
+
+  def rm() do
+    rm(:model)
+    rm(:label)
+  end
+
+  def exists?(:model), do: File.exists?(model())
+  def exists?(:label), do: File.exists?(label())
+
+  def exists?() do
+    exists?(:model) && exists?(:label)
+  end
+end
+```
+
+Get the tflite model and the coco lable from `@wearhouse` and store it in `@local`.
+It will take some time to download because the YOLOv3 model file is over 200MB.
+
+```elixir
+Helper.get()
+```
+
+## 2.Defining the inference module: Yolo3
+* Pre-processing:<br>
+  Resize the input image to the size of `@yolo3_shape` and create a Float32 binary sequence normalized to the range {0.0, 1.0}.
+
+* Post-processing:<br>
+Apply NMS to bounding boxes and their scores to get inference results.
+
+```elixir
+defmodule Yolo3 do
+  # use TflInterp, model: Helper.model(), label: Helper.label()
+  use TflInterp
+
+  @yolo3_shape {416, 416}
+
+  def apply(jpeg) do
+    img = CImg.from_binary(jpeg)
+
+    # preprocess
+    bin =
+      img
+      |> CImg.resize(@yolo3_shape)
+      |> CImg.to_binary(range: {0.0, 1.0})
+
+    # prediction
+    {boxes, scores} =
+      __MODULE__
+      |> TflInterp.set_input_tensor(0, bin)
+      |> TflInterp.invoke()
+      |> (&{
+        TflInterp.get_output_tensor(&1, 0),
+        TflInterp.get_output_tensor(&1, 1)
+      }).()
+
+    # postprocess
+    TflInterp.non_max_suppression_multi_class(__MODULE__,
+      {div(byte_size(boxes), 4*4),80}, boxes, scores
+    )
+  end
+end
+```
+
+Launch `Yolo3`.
+
+```elixir
+Yolo3.start_link(model: Helper.model(), label: Helper.label())
+```
+
+Displays the properties of the `Yolo3` model.
+
+```elixir
+TflInterp.info(Yolo3)
+```
+
+## 3.Let's try it
+
+In one shot.
+
+```elixir
+alias CImg.Builder
+
+draw_object = fn builder, {name, boxes} ->
+  Enum.reduce(boxes, builder, fn [_score | box], canvas ->
+    [x0, y0, x1, y1] = Enum.map(box, fn x -> x / 416 end)
+    CImg.draw_rect(canvas, x0, y0, x1, y1, {255, 0, 0})
+    # |> CImg.draw_text(x0, y0 - 16, name, 16, :red)
+  end)
+end
+
+jpeg = Picam.next_frame()
+
+with {:ok, res} <- Yolo3.apply(jpeg) do
+  # draw result box
+  Enum.reduce(Map.to_list(res), Builder.from_binary(jpeg), &draw_object.(&2, &1))
+  |> Builder.runit()
+else
+  _ -> CImg.from_binary(jpeg)
+end
+|> CImg.resize({640, 480})
+|> CImg.to_binary(:jpeg)
+|> Kino.Image.new(:jpeg)
+```
+
+## 4.TIL ;-)
+
+#### Date: Feb. 17, 2022 / Nerves-livebook rpi3
+Since it is a large model, the inference speed on rpi3 was slow as expected.
+I also tried the YOLOv3-tiny model, but I was not satisfied with the inference accuracy.
+
+&#9633;
