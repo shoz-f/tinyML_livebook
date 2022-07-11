@@ -91,7 +91,7 @@ defmodule Midas do
       |> Nx.subtract(min)
       |> Nx.divide(max - min)
       |> Nx.to_binary()
-      |> CImg.from_binary(256, 256, 1, 1, "<f4")
+      |> CImg.from_binary(256, 256, 1, 1, dtype: "<f4")
   end
 end
 ```
@@ -120,8 +120,7 @@ CImg.from_binary(img)
 |> Midas.apply()
 |> CImg.resize({320, 240})
 |> CImg.color_mapping(:jet)
-|> CImg.to_binary(:png)
-|> Kino.Image.new(:png)
+|> CImg.display_kino(:jpeg)
 ```
 ## 4.TIL ;-)
 
