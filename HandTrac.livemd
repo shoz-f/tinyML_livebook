@@ -176,3 +176,7 @@ Problems to be solved:<br>
 - Both the inference time(about 3 FPS) and the input data transfer time are too time-consuming.
 
 &#9633;
+
+#### License
+Copyright 2022 Shozo Fukuda.
+Apache License Version 2.0

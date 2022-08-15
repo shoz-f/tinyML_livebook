@@ -3,9 +3,11 @@
 ## 0.Original work
 
 "YOLO: Real-Time Object Detection"<br>
+
 * https://pjreddie.com/darknet/yolo/
 
 Việt Hùng "tensorflow-yolov4-tflite"<br>
+
 * https://github.com/hunglc007/tensorflow-yolov4-tflite
 
 ***Thanks a lot!!!***
@@ -67,11 +69,12 @@ Helper.get()
 ```
 
 ## 2.Defining the inference module: Yolo3
+
 * Pre-processing:<br>
   Resize the input image to the size of `@yolo3_shape` and create a Float32 binary sequence normalized to the range {0.0, 1.0}.
 
 * Post-processing:<br>
-Apply NMS to bounding boxes and their scores to get inference results.
+  Apply NMS to bounding boxes and their scores to get inference results.
 
 ```elixir
 defmodule Yolo3 do
@@ -95,13 +98,16 @@ defmodule Yolo3 do
       |> TflInterp.set_input_tensor(0, bin)
       |> TflInterp.invoke()
       |> (&{
-        TflInterp.get_output_tensor(&1, 0),
-        TflInterp.get_output_tensor(&1, 1)
-      }).()
+            TflInterp.get_output_tensor(&1, 0),
+            TflInterp.get_output_tensor(&1, 1)
+          }).()
 
     # postprocess
-    TflInterp.non_max_suppression_multi_class(__MODULE__,
-      {div(byte_size(boxes), 4*4),80}, boxes, scores
+    TflInterp.non_max_suppression_multi_class(
+      __MODULE__,
+      {div(byte_size(boxes), 4 * 4), 80},
+      boxes,
+      scores
     )
   end
 end
@@ -151,6 +157,7 @@ end
 ## 4.TIL ;-)
 
 #### Date: Feb. 17, 2022 / Nerves-livebook rpi3
+
 Since it is a large model, the inference speed on rpi3 was slow as expected.
 I also tried the YOLOv3-tiny model, but I was not satisfied with the inference accuracy.
 
